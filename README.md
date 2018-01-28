@@ -1,2 +1,1 @@
-# VCFcompara
-A site developped for the comparison of VCF files
+# cron-jobs
