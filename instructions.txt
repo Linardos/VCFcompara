@@ -1,0 +1,14 @@
+source /home/mondestrasz/Documents/MySQL/cron-jobs/database_create.sql
+
+INSERT INTO USER (username) VALUES ('antonios');
+
+python2 run_vcf_read.py
+
+run twice to make 2 files:
+mv files/* fresh_files/
+python2 run_vcf_read.py
+
+make toy row on ANALYSES:
+
+INSERT INTO ANALYSES (user_id, file_id_1, file_id_2, analysis_type, output_file_name) VALUE (1, 1, 2, 'same', 'output_name')
+
