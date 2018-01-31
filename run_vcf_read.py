@@ -9,25 +9,20 @@ import datetime
 import os
 
 fresh_files = './fresh_files/'
-archives = './archives/'
+files = './files/'
 user = 'antonios' #This should change based on the user, will the files stored in the file system have this information?
-
-ts = time.time()
-timestamp = datetime.datetime.fromtimestamp(ts).strftime('%Y-%m-%d %H:%M:%S')
-#print(len(timestamp))
+localtime = time.asctime( time.localtime() )
+new_file_name = 'File:%s'%localtime #How is the new name defined? i just used the local time to make it unique
+new_file_name = new_file_name.replace(" ", "") #remove spaces
 
 if os.listdir(fresh_files): #check if there are any new files
 
     for file in os.listdir(fresh_files):
 
         path_to_file = fresh_files + file
-        db = mysql.connector.connect(user='antonios', database='dialisi')
-
-        #create a cursor for the select
-        cur = db.cursor()
-        search_user_query = ("SELECT user_id FROM USER WHERE username = %s")
-        cur.execute(search_user_query, (user,))
-        vcf_read_cli = 'python2 vcf_read.py --dbuser antonios  --db dialisi --existing %s --new_file_name atest2 --new_file_path %s'%(user, path_to_file)
+        #command to run vcf_read
+        vcf_read_cli = 'python2 vcf_read.py --dbuser antonios  --db dialisi --existing %s --new_file_name %s --new_file_path %s'%(user, new_file_name, path_to_file)
         os.system(vcf_read_cli)
 
-    os.system('mv ./fresh_files/* ./archives/')
+    move_files_cli = 'mv %s* %s'%(fresh_files, files)
+    os.system(move_files_cli)
