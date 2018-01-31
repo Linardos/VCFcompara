@@ -6,7 +6,7 @@ CREATE USER 'antonios'@'%';
 
 GRANT ALL PRIVILEGES ON dialisi.* TO 'antonios'@'%' WITH GRANT OPTION;
 
-CREATE TABLE USER(
+CREATE TABLE user(
   user_id  INT UNSIGNED NOT NULL AUTO_INCREMENT,
   username VARCHAR(50) NOT NULL,
   password VARCHAR(40) NOT NULL,
@@ -18,7 +18,7 @@ CREATE TABLE USER(
 );
 
 
-CREATE TABLE FILE(
+CREATE TABLE files(
   file_id INT UNSIGNED NOT NULL AUTO_INCREMENT,
   original_file_name VARCHAR(50) NOT NULL, #This is the original file name, the vcf_read script doesn't keep the original file name somewhere tho, should we add something to the vcf_read script?
   file_name VARCHAR(50) NOT NULL,
@@ -28,18 +28,17 @@ CREATE TABLE FILE(
   PRIMARY KEY (file_id),
 
   CONSTRAINT user_file_id
-   FOREIGN KEY (user_id) REFERENCES USER (user_id)
+   FOREIGN KEY (user_id) REFERENCES user (user_id)
    ON DELETE CASCADE
    ON UPDATE RESTRICT
 );
 
 
-CREATE TABLE ANALYSES(
+CREATE TABLE analyses(
   analysis_id INT UNSIGNED NOT NULL AUTO_INCREMENT,
   user_id INT UNSIGNED NOT NULL,
-  file_id INT UNSIGNED NOT NULL,
-  unique_file_name_1 VARCHAR(50) NOT NULL,
-  unique_file_name_2 VARCHAR(40) NOT NULL,
+  file_id_1 INT UNSIGNED NOT NULL,
+  file_id_2 INT UNSIGNED NOT NULL,
   analysis_type VARCHAR(40) NOT NULL,
   output_file_name VARCHAR(40) NOT NULL,
   #I didn't use the timestamp data type in this case because we need both the starting and ending time of the analysis which I found would be easy to do with a python function.
@@ -47,19 +46,21 @@ CREATE TABLE ANALYSES(
   end_time VARCHAR(19),
 
   PRIMARY KEY(analysis_id),
-
   CONSTRAINT user_to_analyses
-   FOREIGN KEY (user_id) REFERENCES USER (user_id),
+   FOREIGN KEY (user_id) REFERENCES user (user_id),
 
-  #I made a foreign key to link to the FILE table, however there are 2 files. Do I have to use 2 foreign keys? Should I use the VCF table instead?
-  CONSTRAINT file_to_analyses
-   FOREIGN KEY (file_id) REFERENCES FILE (file_id),
+  #I made a foreign key to link to the files table, however there are 2 files. Do I have to use 2 foreign keys? Should I use the VCF table instead?
+  CONSTRAINT file_1_to_analyses
+   FOREIGN KEY (file_id_1) REFERENCES files (file_id),
+
+  CONSTRAINT file_2_to_analyses
+   FOREIGN KEY (file_id_2) REFERENCES files (file_id),
 
   CONSTRAINT uniq_dboutfilename UNIQUE (output_file_name)
 
 );
 
-CREATE TABLE VCF(
+CREATE TABLE vcf(
   line_id     INT UNSIGNED NOT NULL AUTO_INCREMENT,
   file_id     INT UNSIGNED NOT NULL,
   chromosome  INT UNSIGNED NOT NULL,
@@ -74,13 +75,13 @@ CREATE TABLE VCF(
   PRIMARY KEY (line_id),
 
   CONSTRAINT file_vcf_id
-    FOREIGN KEY (file_id) REFERENCES FILE (file_id)
+    FOREIGN KEY (file_id) REFERENCES files (file_id)
     ON DELETE CASCADE
     ON UPDATE RESTRICT
 );
 
 
-CREATE TABLE JOB(
+CREATE TABLE job(
    job_id       INT NOT NULL AUTO_INCREMENT,
    job_name     VARCHAR(50) NOT NULL,
    job_creator  VARCHAR(40) NOT NULL,
@@ -91,12 +92,12 @@ CREATE TABLE JOB(
    PRIMARY KEY ( job_id ),
 
    CONSTRAINT vcf_file1_id
-    FOREIGN KEY (vcf_1_id) REFERENCES VCF (file_id)
+    FOREIGN KEY (vcf_1_id) REFERENCES vcf (file_id)
     ON DELETE CASCADE
     ON UPDATE RESTRICT,
 
    CONSTRAINT vcf_file2_id
-    FOREIGN KEY (vcf_2_id) REFERENCES VCF (file_id)
+    FOREIGN KEY (vcf_2_id) REFERENCES vcf (file_id)
     ON DELETE CASCADE
     ON UPDATE RESTRICT
 );
